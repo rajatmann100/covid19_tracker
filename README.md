@@ -1,68 +1,95 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# COVID19Japan.com
 
-## Available Scripts
+A community powered COVID-19 coronavirus tracker for Japan.
 
-In the project directory, you can run:
+The project is a single page JavaScript application running in the browser, pulling data in via a JSON file, and hosted on GitHub Pages.
 
-### `yarn start`
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Data Sources
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+For all information regarding the data powering this site, please visit the [covid19japan-data repo](https://github.com/reustle/covid19japan-data/).
 
-### `yarn test`
+Our data is sourced from a variety of sources, primarily Japanese news outlets like NHK, prefectural governments, and the Ministry of Health, Labour and Welfare.
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `yarn build`
+## Contributing Code
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+If you would like to contribute features, refactor code, etc., please create or comment on an issue on this repo, and one of the core contributors listed below.
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Running Dev Locally
 
-### `yarn eject`
+### Build Instructions
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Requirements: NodeJS
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Set up the environment:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```
+npm install
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Build the code continuously & serve it:
+```
+npm run start-webpack
+```
 
-## Learn More
+You will now be able to access the site at http://localhost:4000/
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### More Commands
 
-### Code Splitting
+Build once:
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+```
+npm run build
+```
 
-### Analyzing the Bundle Size
+Build continuously:
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+```
+npm run watch
+```
 
-### Making a Progressive Web App
+Start Server:
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+```
+npm run start
+```
 
-### Advanced Configuration
+Build for production (minified):
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+```
+npm run build-prod
+```
 
-### Deployment
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+### Localization
 
-### `yarn build` fails to minify
+All strings in the `src/` files should be localized like this:
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+1. Add a key-value pair in `src/i18n/en.json` for your string/text
+2. For HTML: add the `data-i18n="your-new-key"` attribute to the HTML element to be localized (replace "your-new-key" in the example)
+3. For JavaScript: call the `i18next.t("your-new-key")` function to retrieve the localized string (replace "your-new-key" in the example)
+4. Add any additional translations with the same key to other files in `src/i18n/`
+
+
+## License & Code Re-use
+
+The code for this project is released under the [MIT License](LICENSE). You are free to re-use it but we ask that you please include a link back to the [COVID-19 Japan website](https://covid19japan.com/) or [this GitHub repository](https://github.com/reustle/covid19japan). We'd also be happy to include your site in the list of forked projects below – just create an issue to request it.
+
+
+### Forked Projects
+
+- [Sri Lanka COVID-19 Coronavirus Tracker](https://covidsl.com)
+- [Kerala COVID-19 Coronavirus Tracker](https://covid19kerala.info)
+
+
+## Core Contributors
+
+- [Shane Reustle](https://reustle.org)
+- [Alastair Tse](https://github.com/liquidx)
+- [Leonard Chin](https://github.com/l15n)
+- [Jiahui Zhou](https://jiahuizhou.design/) *(concept and design)*
+- and [these wonderful developers](https://github.com/reustle/covid19japan/graphs/contributors)
+

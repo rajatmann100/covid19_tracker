@@ -24,7 +24,7 @@ import travelRestrictions from "./data/travelRestrictions"; // refer to the keys
 mapboxgl.accessToken =
   "pk.eyJ1IjoicmV1c3RsZSIsImEiOiJjazZtaHE4ZnkwMG9iM3BxYnFmaDgxbzQ0In0.nOiHGcSCRNa9MD9WxLIm7g";
 const PREFECTURE_JSON_PATH = "static/prefectures.geojson";
-const JSON_PATH = "https://pomber.github.io/covid19/timeseries.json";
+const JSON_PATH = "https://covidtracking.com/api/v1/states/current.json";
 const COLOR_ACTIVE = "rgb(223,14,31)";
 const COLOR_CONFIRMED = "rgb(244,67,54)";
 const COLOR_RECOVERED = "rgb(25,118,210)";
@@ -71,68 +71,42 @@ if ("NodeList" in window && !NodeList.prototype.forEach) {
 }
 
 // Added for adapting to world data
-function refineData(data) {
-  var countries = Object.keys(data).sort();
-  var dates = data["US"].map((i) => i.date);
-
-  var prefactures = countries.map((c) => {
-    var di = data[c];
-    var deaths = 0;
-    var recovered = 0;
-    var confirmed = 0;
-    // data[c].forEach((i) => {
-    //   deaths += i.deaths;
-    //   recovered += i.recovered;
-    //   confirmed += i.confirmed;
-    // });
-    deaths = di[di.length - 1].deaths;
-    recovered = di[di.length - 1].recovered;
-    confirmed = di[di.length - 1].confirmed;
+function refineData(data, ddata) {
+  var daily = ddata.reverse().map((i, index) => {
+    const formatDate = (d) => {
+      let date = d.toString();
+      date = date.slice(0, 4) + "-" + date.slice(4, 6) + "-" + date.slice(6, 8);
+      return date;
+    };
+    debugger;
     return {
-      confirmed: confirmed,
-      deaths: deaths,
-      dailyConfirmedCount: [
-        di[di.length - 1].confirmed - di[di.length - 2].confirmed,
-      ],
-      dailyConfirmedStartDate: di[0].date,
-      newlyConfirmed: confirmed,
-      recovered: recovered,
-      name_ja: c,
-      name: c,
+      confirmed: i.positiveIncrease,
+      recoveredCumulative: i.recovered,
+      deceasedCumulative: i.death,
+      confirmedCumulative: i.positive,
+      criticalCumulative: i.inIcuCumulative,
+      testedCumulative: i.totalTestResults,
+      date: formatDate(i.date),
+      confirmedAvg3d: 0,
+      confirmedCumulativeAvg3d: 0,
+      confirmedAvg7d: 0,
+      confirmedCumulativeAvg7d: 0,
     };
   });
-  var daily = dates.map((i, index) => {
-    if (index > 0) {
-      var deaths = 0;
-      var recovered = 0;
-      var confirmed = 0;
-      var newCases = 0;
-      countries.forEach((j) => {
-        var di = data[j].find((d) => d.date === i);
-        var dindex = data[j].findIndex((d) => d.date === i);
-        recovered += di.recovered;
-        deaths += di.deaths;
-        confirmed += di.confirmed;
-        newCases += di.confirmed - data[j][dindex - 1].confirmed;
-      });
-      return {
-        confirmed: newCases,
-        recoveredCumulative: recovered,
-        deceasedCumulative: deaths,
-        confirmedCumulative: confirmed,
-        criticalCumulative: 0,
-        testedCumulative: 0,
-        date: i,
-        confirmedAvg3d: 0,
-        confirmedCumulativeAvg3d: 0,
-        confirmedAvg7d: 0,
-        confirmedCumulativeAvg7d: 0,
-      };
-    }
+
+  var states = data.map((s) => {
+    return {
+      confirmed: s.positive,
+      deaths: s.death,
+      dailyConfirmedCount: "NA",
+      recovered: s.recovered,
+      name_ja: s.state,
+      name: s.state,
+    };
   });
 
   return {
-    prefectures: prefactures,
+    prefectures: states,
     daily: daily,
     updated: "2020-04-06T22:48:36+09:00",
   };
@@ -156,7 +130,19 @@ function loadData(callback) {
       .then(function (data) {
         // If there was a network error, data will null.
         if (data) {
-          callback(refineData(data));
+          fetch("https://covidtracking.com/api/us/daily")
+            .then(function (res) {
+              return res.json();
+            })
+            .catch(function (networkError) {
+              retryFn(delay, networkError);
+              delay *= 2; // exponential backoff.
+            })
+            .then(function (ddata) {
+              if (ddata) {
+                callback(refineData(data, ddata));
+              }
+            });
         }
       });
   };

@@ -22,8 +22,8 @@ import translationJa from "./i18n/ja.json";
 import travelRestrictions from "./data/travelRestrictions"; // refer to the keys under "countries" in the i18n files for names
 
 mapboxgl.accessToken =
-  "pk.eyJ1IjoicmV1c3RsZSIsImEiOiJjazZtaHE4ZnkwMG9iM3BxYnFmaDgxbzQ0In0.nOiHGcSCRNa9MD9WxLIm7g";
-const PREFECTURE_JSON_PATH = "static/prefectures.geojson";
+  "pk.eyJ1IjoicmFqYXRtYW5uMTAwIiwiYSI6ImNrOHVpZmN1NjAwaXkzZnFtZGEzM3Y3b3IifQ.cIQ4_s5LLGrFyyKsruPQEg";
+const PREFECTURE_JSON_PATH = "static/us_states.geojson";
 const JSON_PATH = "https://covidtracking.com/api/v1/states/current.json";
 const COLOR_ACTIVE = "rgb(223,14,31)";
 const COLOR_CONFIRMED = "rgb(244,67,54)";
@@ -70,15 +70,14 @@ if ("NodeList" in window && !NodeList.prototype.forEach) {
   };
 }
 
-// Added for adapting to world data
-function refineData(data, ddata) {
+// Added for adapting to US data
+function refineData(data, ddata, stateCodes) {
   var daily = ddata.reverse().map((i, index) => {
     const formatDate = (d) => {
       let date = d.toString();
       date = date.slice(0, 4) + "-" + date.slice(4, 6) + "-" + date.slice(6, 8);
       return date;
     };
-    debugger;
     return {
       confirmed: i.positiveIncrease,
       recoveredCumulative: i.recovered,
@@ -100,8 +99,8 @@ function refineData(data, ddata) {
       deaths: s.death,
       dailyConfirmedCount: "NA",
       recovered: s.recovered,
-      name_ja: s.state,
-      name: s.state,
+      name_ja: stateCodes[s.state],
+      name: stateCodes[s.state],
     };
   });
 
@@ -140,7 +139,13 @@ function loadData(callback) {
             })
             .then(function (ddata) {
               if (ddata) {
-                callback(refineData(data, ddata));
+                fetch("static/us_state_codes.json")
+                  .then(function (res) {
+                    return res.json();
+                  })
+                  .then(function (stateCodes) {
+                    callback(refineData(data, ddata, stateCodes));
+                  });
               }
             });
         }
@@ -214,17 +219,13 @@ function drawMap() {
   map = new mapboxgl.Map({
     container: "map-container",
     style: "mapbox://styles/mapbox/light-v10",
-    zoom: 4,
-    minZoom: 3.5,
-    maxZoom: 7,
+    zoom: 3,
+    minZoom: 1,
+    maxZoom: 3,
     center: {
-      lng: 139.11792973051274,
-      lat: 38.52245616545571,
+      lng: -98.5795,
+      lat: 39.8283,
     },
-    maxBounds: [
-      { lat: 12.118318014416644, lng: 100.01240618330542 }, // SW
-      { lat: 59.34721256263214, lng: 175.3273570446982 }, // NE
-    ],
   });
 
   map.dragRotate.disable();
@@ -989,7 +990,7 @@ function drawMapPrefectures(pageDraws) {
   }
 
   // Start the Mapbox search expression
-  let prefecturePaint = ["match", ["get", "NAME_1"]];
+  let prefecturePaint = ["match", ["get", "NAME"]];
 
   // Go through all prefectures looking for cases
   ddb.prefectures.map(function (prefecture) {
@@ -997,17 +998,17 @@ function drawMapPrefectures(pageDraws) {
     if (cases > 0) {
       prefecturePaint.push(prefecture.name);
 
-      if (cases <= 50) {
-        // 1-50 cases
+      if (cases <= 1000) {
+        // 1-1000 cases
         prefecturePaint.push("rgb(253,234,203)");
-      } else if (cases <= 100) {
-        // 51-100 cases
+      } else if (cases <= 10000) {
+        // 1001-10000 cases
         prefecturePaint.push("rgb(251,155,127)");
-      } else if (cases <= 200) {
-        // 101-200 cases
+      } else if (cases <= 25000) {
+        // 10001-25000 cases
         prefecturePaint.push("rgb(244,67,54)");
       } else {
-        // 201+ cases
+        // 25000+ cases
         prefecturePaint.push("rgb(186,0,13)");
       }
     }
